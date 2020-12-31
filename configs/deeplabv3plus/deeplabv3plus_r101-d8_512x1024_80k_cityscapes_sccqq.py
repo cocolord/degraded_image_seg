@@ -3,4 +3,17 @@ _base_ = [
     '../_base_/datasets/cityscapes_sccqq.py', '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_80k.py'
 ]
-model = dict(pretrained='open-mmlab://resnet101_v1c', backbone=dict(depth=101))
+norm_cfg=dict(type='BN',requires_grad=True)
+model = dict(
+    pretrained='open-mmlab://resnet101_v1c', 
+    backbone=dict(
+        depth=101,
+        norm_cfg=norm_cfg,
+        norm_eval=False),
+    decode_head=dict(
+        norm_cfg=norm_cfg
+    ),
+    auxiliary_head=dict(
+        norm_cfg=norm_cfg,
+    )
+    )

@@ -1,6 +1,6 @@
 # dataset settings
-dataset_type = 'CityscapesDataset'
-data_root = 'data/cityscapes/'
+dataset_type = 'CityscapesBlurredDataset'
+data_root = 'data/cityscapes_blurred/'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 crop_size = (512, 1024)
@@ -37,18 +37,18 @@ data = dict(
     train=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir='leftImg8bit/train',
+        img_dir='leftImg8bit_blurred/train',
         ann_dir='gtFine/train',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir='leftImg8bit/val',
+        img_dir='leftImg8bit_blurred/val',
         ann_dir='gtFine/val',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
         data_root=data_root,
-        img_dir='leftImg8bit/test',
+        img_dir='leftImg8bit_blurred/test',
         ann_dir='gtFine/test',
         pipeline=test_pipeline))

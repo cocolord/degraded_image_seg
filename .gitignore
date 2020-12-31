@@ -115,3 +115,7 @@ work_dirs/
 result/
 # Pytorch
 *.pth
+
+buaa_night_ocrnet/
+checkpoints/
+cityscapes_test/

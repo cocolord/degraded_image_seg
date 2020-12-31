@@ -2,8 +2,8 @@ from mmseg.apis import inference_segmentor, init_segmentor
 import mmcv
 import os
 
-config_file = 'configs/ocrnet/ocrnet_s101-d8_512x1024_80k_b16_cityscapes.py'
-checkpoint_file = 'work_dirs/ocrnet_s101-d8_512x1024_80k_b16_cityscapes/iter_80000.pth'
+config_file = 'configs/ocrnet/ocrnet_r101-d8_512x1024_80k_b16_cityscapes.py'
+checkpoint_file = 'checkpoints/ocrnet_r101-d8_512x1024_80k_b16_cityscapes-78688424.pth'
 
 # build the model from a config file and a checkpoint file
 model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
@@ -18,7 +18,7 @@ model = init_segmentor(config_file, checkpoint_file, device='cuda:0')
 
 # test a video and show the results
 video = mmcv.VideoReader('data/buaa_darknight/IMG_4875.mov')
-output_dir = './buaa_night'
+output_dir = './buaa_night' + '_ocrnet'
 for idx,frame in enumerate(video):
     result = inference_segmentor(model, frame)
     model.show_result(frame, result, wait_time=1,out_file=os.path.join(output_dir,str(idx))+'.jpg')

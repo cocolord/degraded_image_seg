@@ -1,9 +1,4 @@
-_base_ = [
-    '../_base_/models/deeplabv3plus_r50-d8.py',
-    '../_base_/datasets/cityscapes_sccqq.py', '../_base_/default_runtime.py',
-    '../_base_/schedules/schedule_80k.py'
-]
-
+_base_ = '../deeplabv3plus/deeplabv3plus_r101-d8_512x1024_80k_cityscapes_sccqq_gn.py'
 model = dict(
     pretrained='open-mmlab://resnest101',
     backbone=dict(
