@@ -31,7 +31,7 @@ class CityscapesSccqqDataset(CustomDataset):
 
     def __init__(self, **kwargs):
         super(CityscapesSccqqDataset, self).__init__(
-            img_suffix='_leftImg8bit_to_sccqq.png',
+            img_suffix='_leftImg8bit_to_sccqq.jpg',
             seg_map_suffix='_gtFine_labelTrainIds.png',
             **kwargs)
 

@@ -5,3 +5,6 @@ _base_ = [
 model = dict(pretrained='torchvision://resnet50', backbone=dict(depth=50))
 optimizer = dict(lr=0.02)
 lr_config = dict(min_lr=2e-4)
+
+data=dict(samples_per_gpu=4)
+optimizer_config = dict(type='Fp16OptimizerHook', loss_scale=512.)
