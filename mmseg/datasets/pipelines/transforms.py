@@ -14,7 +14,7 @@ class Resize(object):
     contains the key "scale", then the scale in the input dict is used,
     otherwise the specified scale in the init method is used.
 
-    ``img_scale`` can be Nong, a tuple (single-scale) or a list of tuple
+    ``img_scale`` can be None, a tuple (single-scale) or a list of tuple
     (multi-scale). There are 4 multiscale modes:
 
     - ``ratio_range is not None``:
@@ -89,7 +89,7 @@ class Resize(object):
         Args:
             img_scales (list[tuple]): Images scale range for sampling.
                 There must be two tuples in img_scales, which specify the lower
-                and uper bound of image scales.
+                and upper bound of image scales.
 
         Returns:
             (tuple, None): Returns a tuple ``(img_scale, None)``, where
@@ -156,8 +156,9 @@ class Resize(object):
 
         if self.ratio_range is not None:
             if self.img_scale is None:
-                scale, scale_idx = self.random_sample_ratio(
-                    results['img'].shape[:2], self.ratio_range)
+                h, w = results['img'].shape[:2]
+                scale, scale_idx = self.random_sample_ratio((w, h),
+                                                            self.ratio_range)
             else:
                 scale, scale_idx = self.random_sample_ratio(
                     self.img_scale[0], self.ratio_range)
@@ -782,7 +783,6 @@ class PhotoMetricDistortion(object):
     5. random hue
     6. convert color from HSV to BGR
     7. random contrast (mode 1)
-    8. randomly swap channels
 
     Args:
         brightness_delta (int): delta of brightness.
