@@ -1,7 +1,7 @@
 _base_ = './cityscapes.py'
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-crop_size = (769, 769)
+crop_size = (768, 768)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations'),
@@ -19,10 +19,10 @@ test_pipeline = [
     dict(
         type='MultiScaleFlipAug',
         img_scale=(2049, 1025),
-        # img_ratios=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
-        flip=False,
+        img_ratios=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
+        flip=True,
         transforms=[
-            dict(type='Resize', keep_ratio=True),
+            dict(type='Resize', keep_ratio=True, dataset='cityscapes', multi_scale_test=True),
             dict(type='RandomFlip'),
             dict(type='Normalize', **img_norm_cfg),
             dict(type='ImageToTensor', keys=['img']),
