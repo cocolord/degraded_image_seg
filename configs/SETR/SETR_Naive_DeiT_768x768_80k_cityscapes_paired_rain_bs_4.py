@@ -1,6 +1,6 @@
 _base_ = [
     '../_base_/models/setr_naive_pup.py',
-    '../_base_/datasets/cityscapes_768x768_paired_foggy.py', '../_base_/default_runtime.py',
+    '../_base_/datasets/cityscapes_768x768_paired_rain.py', '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_80k.py'
 ]
 
