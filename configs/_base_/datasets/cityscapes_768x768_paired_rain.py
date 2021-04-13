@@ -29,7 +29,7 @@ test_pipeline = [
         ])
 ]
 cityscapes_data_root = 'data/cityscapes/'
-cityscapes_foggy_data_root = 'data/cityscapes_foggy/'
+cityscapes_foggy_data_root = 'data/cityscapes_rain/'
 dataset_cityscapes_train = dict(
                                 type = 'CityscapesDataset',
                                 data_root=cityscapes_data_root,
