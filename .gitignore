@@ -120,3 +120,4 @@ buaa_night_ocrnet/
 checkpoints/
 cityscapes_test/
 exp/
+demo/
