@@ -11,7 +11,9 @@ from .unet import UNet
 from .vit import VisionTransformer
 from .vit_mla import VIT_MLA
 
+from .swin_transformer import SwinTransformer
 __all__ = [
     'ResNet', 'ResNetV1c', 'ResNetV1d', 'ResNeXt', 'HRNet', 'FastSCNN',
     'ResNeSt', 'MobileNetV2', 'UNet', 'CGNet', 'MobileNetV3', 'VisionTransformer', 'VIT_MLA',
+    'SwinTransformer'
 ]
