@@ -64,6 +64,6 @@ class VIT_MLALAHead(BaseDecodeHead):
     def forward(self, inputs):
         x = self.mlahead(inputs[0], inputs[1], inputs[2], inputs[3])
         b,c,h,w = x.size()
-        x = self.cls(la(x.view(b,4,-1,h,w)))
+        x = self.cls(self.la(x.view(b,4,-1,h,w)))
         x = F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)        
         return x
