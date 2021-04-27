@@ -53,11 +53,10 @@ default_cfgs = {
     'vit_base_resnet26d_224': _cfg(),
     'vit_base_resnet50d_224': _cfg(),
     'deit_base_distilled_path16_384': _cfg(
+        url='https://dl.fbaipublicfiles.com/deit/deit_base_distilled_patch16_384-d0272ac0.pth',
         input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0,
-        pretrained_finetune='pretrain/deit_base_distilled_patch16_384.pth'
-    )
+        )
 }
-
 
 class Mlp(nn.Module):
     def __init__(self, in_features, hidden_features=None, out_features=None, act_layer=nn.GELU, drop=0.):
