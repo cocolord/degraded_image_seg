@@ -16,7 +16,7 @@ from .vit_mla_head import MLAHead
 class Layer_Att(nn.Module):
     def __init__(self):
         super(Layer_Att, self).__init__()
-        self.gamma = nn.Parameter(torch.zeros_like(torch.tensor(0.1)))
+        self.gamma = nn.Parameter(torch.zeros(1,requires_grad=True))
         self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x):
@@ -38,31 +38,46 @@ class Layer_Att(nn.Module):
         out = torch.bmm(attention, proj_value)
         out = out.view(m_batchsize, N, C, height, width)
 
-        out = 0.1*out + x
+        out = 0.01*out + x
         out = out.view(m_batchsize, -1, height, width)
         return out
 
 
 @HEADS.register_module()
-class VIT_MLALAHead(BaseDecodeHead):
+class VIT_MLALAConvFuseHead(BaseDecodeHead):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
     def __init__(self, img_size=768, mla_channels=256, mlahead_channels=128, 
                 norm_layer=nn.BatchNorm2d, norm_cfg=None, **kwargs):
-        super(VIT_MLALAHead, self).__init__(**kwargs)
+        super(VIT_MLALAConvFuseHead, self).__init__(**kwargs)
         self.img_size = img_size
         self.norm_cfg = norm_cfg
         self.mla_channels = mla_channels
         self.BatchNorm = norm_layer
         self.mlahead_channels = mlahead_channels
         self.mlahead = MLAHead(mla_channels=self.mla_channels, mlahead_channels=self.mlahead_channels, norm_cfg=self.norm_cfg)
-        self.cls = nn.Conv2d(4 * self.mlahead_channels, self.num_classes, 3, padding=1)
+        self.fuse1 = nn.Conv2d(4 * self.mlahead_channels, self.mlahead_channels, 1, 1, 0)
+        self.fuse2 = nn.Conv2d(2 * self.mlahead_channels, self.mlahead_channels, 1, 1, 0)
+        self.cls = nn.Conv2d(self.mlahead_channels, self.num_classes, 3, padding=1)
         self.la = Layer_Att()
+        self.la_conv = Layer_Att()
 
     def forward(self, inputs):
         x = self.mlahead(inputs[0], inputs[1], inputs[2], inputs[3])
+        # print('----mlahead---x.size()',x.size())
+        # print('---input[4] ---',inputs[4].size())
         b,c,h,w = x.size()
+        # print('---x before la---',x.size())
         x = self.la(x.view(b,4,-1,h,w))
+        # print('---x before fuse1---',x.size())
+        x = self.fuse1(x)
+        # print('---x before cat---',x.size())
+        x = torch.cat((x,inputs[4]), dim=1)
+        # print('---x after cat---',x.size())
+        x = self.la_conv(x.view(b,2,-1,h,w))
+        # print('---x after la---',x.size())
+        x = self.fuse2(x)
+        # print('---x after fuse2---',x.size())
         x = self.cls(x)
         x = F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)        
         return x

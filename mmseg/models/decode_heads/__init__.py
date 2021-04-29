@@ -23,11 +23,11 @@ from .vit_up_head import VisionTransformerUpHead
 from .vit_mla_head import VIT_MLAHead
 from .vit_mla_auxi_head import VIT_MLA_AUXIHead
 from .vit_mla_la_head import VIT_MLALAHead
-
+from .vit_mla_la_head_convfuse import VIT_MLALAConvFuseHead
 __all__ = [
     'FCNHead', 'PSPHead', 'ASPPHead', 'PSAHead', 'NLHead', 'GCHead', 'CCHead',
     'UPerHead', 'DepthwiseSeparableASPPHead', 'ANNHead', 'DAHead', 'OCRHead',
     'EncHead', 'DepthwiseSeparableFCNHead', 'FPNHead', 'EMAHead', 'DNLHead',
     'PointHead', 'APCHead', 'DMHead', 'LRASPPHead','VisionTransformerUpHead', 
-    'VIT_MLAHead', 'VIT_MLA_AUXIHead', 'VIT_MLALAHead'
+    'VIT_MLAHead', 'VIT_MLA_AUXIHead', 'VIT_MLALAHead', 'VIT_MLALAConvFuseHead'
 ]

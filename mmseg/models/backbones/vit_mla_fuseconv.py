@@ -227,7 +227,7 @@ class Conv_MLA(nn.Module):
 
 
 @BACKBONES.register_module()
-class VIT_MLA(nn.Module):
+class VIT_MLA_ConvFuse(nn.Module):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
     def __init__(self, model_name='vit_large_patch16_384', img_size=384, patch_size=16, in_chans=3, embed_dim=1024, depth=24,
@@ -235,7 +235,7 @@ class VIT_MLA(nn.Module):
                  drop_path_rate=0., hybrid_backbone=None, norm_layer=partial(nn.LayerNorm, eps=1e-6), norm_cfg=None, 
                  pos_embed_interp=False, random_init=False, align_corners=False, mla_channels=256, 
                  mla_index=(5,11,17,23), **kwargs):
-        super(VIT_MLA, self).__init__(**kwargs)
+        super(VIT_MLA_ConvFuse, self).__init__(**kwargs)
         self.model_name = model_name
         self.img_size = img_size
         self.patch_size = patch_size
@@ -287,6 +287,7 @@ class VIT_MLA(nn.Module):
         self.norm_1 = norm_layer(self.embed_dim)
         self.norm_2 = norm_layer(self.embed_dim)
         self.norm_3 = norm_layer(self.embed_dim)
+        self.conv_fuse = Conv_Fuse()
         # NOTE as per official impl, we could have a pre-logits representation dense layer + tanh here
         #self.repr = nn.Linear(embed_dim, representation_size)
         #self.repr_act = nn.Tanh()
@@ -332,6 +333,7 @@ class VIT_MLA(nn.Module):
         return out_dict
 
     def forward(self, x):
+        y = self.conv_fuse(x)
         B = x.shape[0]
         x = self.patch_embed(x)
         x = x.flatten(2).transpose(1, 2)
@@ -355,4 +357,25 @@ class VIT_MLA(nn.Module):
         
         p6, p12, p18, p24 = self.mla(c6, c12, c18, c24)
         
-        return (p6, p12, p18, p24)
+        return (p6, p12, p18, p24, y)
+
+@BACKBONES.register_module()
+class Conv_Fuse(nn.Module):
+    def __init__(self):
+        super(Conv_Fuse, self).__init__()
+        self.conv1 =  nn.Conv2d(3,64,3,2,1)
+        self.relu1 = nn.ReLU()
+        self.conv2 = nn.Conv2d(64,128,3,2,1)
+        self.relu2 = nn.ReLU()
+        self.bn1 = nn.BatchNorm2d(64)
+        self.bn2 = nn.BatchNorm2d(128)
+
+    def forward(self, x):
+        b,c,h,w = x.size()
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu1(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu2(x)
+        return x
