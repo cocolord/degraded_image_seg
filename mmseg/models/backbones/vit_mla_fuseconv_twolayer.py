@@ -363,7 +363,8 @@ class VIT_MLA_ConvFuse_TwoLayer(nn.Module):
 class Conv_Fuse_TwoLayer(nn.Module):
     def __init__(self):
         super(Conv_Fuse_TwoLayer, self).__init__()
-        self.conv1 = nn.Conv2d(3,64,3,2,1)
+        self.conv0 = nn.Conv2d(3,64,3,1,1)
+        self.conv1 = nn.Conv2d(64,64,3,2,1)
         self.relu1 = nn.ReLU()
         self.conv2 = nn.Conv2d(64,128,3,2,1)
         self.relu2 = nn.ReLU()
