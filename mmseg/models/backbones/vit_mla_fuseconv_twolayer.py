@@ -333,7 +333,7 @@ class VIT_MLA_ConvFuse_TwoLayer(nn.Module):
         return out_dict
 
     def forward(self, x):
-        c1, c2 = self.conv_fuse(x)
+        c1 = self.conv_fuse(x)
         B = x.shape[0]
         x = self.patch_embed(x)
         x = x.flatten(2).transpose(1, 2)
@@ -357,26 +357,38 @@ class VIT_MLA_ConvFuse_TwoLayer(nn.Module):
         
         p6, p12, p18, p24 = self.mla(c6, c12, c18, c24)
         
-        return (p6, p12, p18, p24, c1, c2)
+        return (p6, p12, p18, p24, c1)
 
 @BACKBONES.register_module()
 class Conv_Fuse_TwoLayer(nn.Module):
     def __init__(self):
         super(Conv_Fuse_TwoLayer, self).__init__()
-        self.conv0 = nn.Conv2d(3,64,3,1,1)
-        self.conv1 = nn.Conv2d(64,64,3,2,1)
+        self.img_size = (384,384)
+        self.conv0 = nn.Conv2d(3,3,3,1,1)
+        self.conv0_enhance = nn.Conv2d(3,3,5,1,2)
+        self.conv1 = nn.Conv2d(3,64,3,2,1)
+        self.conv1_enhance = nn.Conv2d(64,64,3,1,1)
         self.relu1 = nn.ReLU()
         self.conv2 = nn.Conv2d(64,128,3,2,1)
         self.relu2 = nn.ReLU()
         self.bn1 = nn.BatchNorm2d(64)
         self.bn2 = nn.BatchNorm2d(128)
+        self.conv3 = nn.Conv2d(64,128,3,2,1)
+        self.conv_fuse = nn.Conv2d(256,128,1,1,0)
 
     def forward(self, x):
         b,c,h,w = x.size()
+        x = self.conv0(x)
+        x = self.conv0_enhance(x)
         x = self.conv1(x)
+        x = self.conv1_enhance(x)
         x = self.bn1(x)
         x = self.relu1(x)
-        y = self.conv2(y)
+        y = self.conv2(x)
         y = self.bn2(y)
         y = self.relu2(y)
-        return x, y 
+        x = self.conv3(x)
+        x = torch.cat((x, y),dim=1)
+        x = self.conv_fuse(x)
+        # print('backbone x.size', x.size())
+        return x

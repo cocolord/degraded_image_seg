@@ -57,13 +57,15 @@ class VIT_MLALAConvFuseTwoLayerHead(BaseDecodeHead):
         self.mlahead_channels = mlahead_channels
         self.mlahead = MLAHead(mla_channels=self.mla_channels, mlahead_channels=self.mlahead_channels, norm_cfg=self.norm_cfg)
         self.fuse1 = nn.Conv2d(4 * self.mlahead_channels, self.mlahead_channels, 1, 1, 0)
-        self.fuse2 = nn.Conv2d(3 * self.mlahead_channels, self.mlahead_channels, 1, 1, 0)
+        self.fuse2 = nn.Conv2d(2 * self.mlahead_channels, self.mlahead_channels, 1, 1, 0)
         self.cls = nn.Conv2d(self.mlahead_channels, self.num_classes, 3, padding=1)
         self.la = Layer_Att()
         self.la_conv = Layer_Att()
 
     def forward(self, inputs):
+        # print("----inputs----",len(inputs))
         x = self.mlahead(inputs[0], inputs[1], inputs[2], inputs[3])
+        # print('---input[0] ---',inputs[0].size())
         # print('----mlahead---x.size()',x.size())
         # print('---input[4] ---',inputs[4].size())
         b,c,h,w = x.size()
@@ -72,9 +74,11 @@ class VIT_MLALAConvFuseTwoLayerHead(BaseDecodeHead):
         # print('---x before fuse1---',x.size())
         x = self.fuse1(x)
         # print('---x before cat---',x.size())
-        x = torch.cat((x,inputs[4],inputs[5]), dim=1)
+        # print('---inputs[4] before cat---',inputs[4].size())
+        
+        x = torch.cat((x,inputs[4]), dim=1)
         # print('---x after cat---',x.size())
-        x = self.la_conv(x.view(b,3,-1,h,w))
+        x = self.la_conv(x.view(b,2,-1,h,w))
         # print('---x after la---',x.size())
         x = self.fuse2(x)
         # print('---x after fuse2---',x.size())
