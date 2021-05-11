@@ -60,7 +60,7 @@ model = dict(
         ])
 
 optimizer = dict(lr=0.002, weight_decay=0.0,
-paramwise_cfg = dict(custom_keys={'head': dict(lr_mult=2.)})
+paramwise_cfg = dict(custom_keys={'head': dict(lr_mult=5.)})
 )
 
 crop_size = (768, 768)
