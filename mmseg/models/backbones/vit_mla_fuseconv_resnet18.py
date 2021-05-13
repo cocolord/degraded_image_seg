@@ -1,8 +1,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.models as models
+
 from functools import partial
 import math
+
 
 from .helpers import load_pretrained
 from .layers import DropPath, to_2tuple, trunc_normal_
@@ -11,29 +14,7 @@ from ..builder import BACKBONES
 
 from mmcv.cnn import build_norm_layer
 
-def positionalencoding2d(d_model, height, width):
-    """
-    :param d_model: dimension of the model
-    :param height: height of the positions
-    :param width: width of the positions
-    :return: d_model*height*width position matrix
-    """
-    if d_model % 4 != 0:
-        raise ValueError("Cannot use sin/cos positional encoding with "
-                         "odd dimension (got dim={:d})".format(d_model))
-    pe = torch.zeros(d_model, height, width)
-    # Each dimension use half of d_model
-    d_model = int(d_model / 2)
-    div_term = torch.exp(torch.arange(0., d_model, 2) *
-                         -(math.log(10000.0) / d_model))
-    pos_w = torch.arange(0., width).unsqueeze(1)
-    pos_h = torch.arange(0., height).unsqueeze(1)
-    pe[0:d_model:2, :, :] = torch.sin(pos_w * div_term).transpose(0, 1).unsqueeze(1).repeat(1, height, 1)
-    pe[1:d_model:2, :, :] = torch.cos(pos_w * div_term).transpose(0, 1).unsqueeze(1).repeat(1, height, 1)
-    pe[d_model::2, :, :] = torch.sin(pos_h * div_term).transpose(0, 1).unsqueeze(2).repeat(1, 1, width)
-    pe[d_model + 1::2, :, :] = torch.cos(pos_h * div_term).transpose(0, 1).unsqueeze(2).repeat(1, 1, width)
-
-    return pe.permute(1,2,0)
+from .resnet import ResNet
 
 def _cfg(url='', **kwargs):
     return {
@@ -250,7 +231,7 @@ class Conv_MLA(nn.Module):
 
 
 @BACKBONES.register_module()
-class VIT_MLA(nn.Module):
+class VIT_MLA_ConvFuse_ResNet18(nn.Module):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
     def __init__(self, model_name='vit_large_patch16_384', img_size=384, patch_size=16, in_chans=3, embed_dim=1024, depth=24,
@@ -258,7 +239,7 @@ class VIT_MLA(nn.Module):
                  drop_path_rate=0., hybrid_backbone=None, norm_layer=partial(nn.LayerNorm, eps=1e-6), norm_cfg=None, 
                  pos_embed_interp=False, random_init=False, align_corners=False, mla_channels=256, 
                  mla_index=(5,11,17,23), **kwargs):
-        super(VIT_MLA, self).__init__(**kwargs)
+        super(VIT_MLA_ConvFuse_ResNet18, self).__init__(**kwargs)
         self.model_name = model_name
         self.img_size = img_size
         self.patch_size = patch_size
@@ -294,8 +275,7 @@ class VIT_MLA(nn.Module):
         self.num_patches = self.patch_embed.num_patches
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dim))
-        # self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches + 1, self.embed_dim))
-        self.pos_embed = positionalencoding2d(1,self.num_patches + 1, self.embed_dim)
+        self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches + 1, self.embed_dim))
         self.pos_drop = nn.Dropout(p=self.drop_rate)
 
         dpr = [x.item() for x in torch.linspace(0, self.drop_path_rate, self.depth)]  # stochastic depth decay rule
@@ -311,6 +291,7 @@ class VIT_MLA(nn.Module):
         self.norm_1 = norm_layer(self.embed_dim)
         self.norm_2 = norm_layer(self.embed_dim)
         self.norm_3 = norm_layer(self.embed_dim)
+        self.conv_fuse = Conv_Fuse_ResNet()
         # NOTE as per official impl, we could have a pre-logits representation dense layer + tanh here
         #self.repr = nn.Linear(embed_dim, representation_size)
         #self.repr_act = nn.Tanh()
@@ -356,6 +337,7 @@ class VIT_MLA(nn.Module):
         return out_dict
 
     def forward(self, x):
+        y = self.conv_fuse(x)
         B = x.shape[0]
         x = self.patch_embed(x)
         x = x.flatten(2).transpose(1, 2)
@@ -379,4 +361,26 @@ class VIT_MLA(nn.Module):
         
         p6, p12, p18, p24 = self.mla(c6, c12, c18, c24)
         
-        return (p6, p12, p18, p24)
+        return (p6, p12, p18, p24, y)
+
+@BACKBONES.register_module()
+class Conv_Fuse_ResNet(nn.Module):
+    def __init__(self):
+        super(Conv_Fuse_ResNet, self).__init__()
+        self.resnet = ResNet(depth=18)
+        self.resnet.init_weights(pretrained='torchvision://resnet18')
+        self.conv_fuse = nn.Conv2d(960,128,1,1,0)
+        self.relu4 = nn.ReLU()
+        self.bn4 = nn.BatchNorm2d(128)
+
+
+    def forward(self, x):
+        b,c,h,w = x.size()
+        x = self.resnet(x)
+        c1 = F.interpolate(x[1],(h//4,w//4),mode='bilinear')
+        c2 = F.interpolate(x[2],(h//4,w//4),mode='bilinear')
+        c3 = F.interpolate(x[3], (h//4,w//4), mode= 'bilinear')
+        x = torch.cat((x[0],c1,c2,c3), dim=1)
+        x = self.conv_fuse(x)
+        # 1/4 H, 1/4 W, 128
+        return x
