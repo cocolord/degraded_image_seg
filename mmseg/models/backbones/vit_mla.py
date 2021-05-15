@@ -33,7 +33,7 @@ def positionalencoding2d(d_model, height, width):
     pe[d_model::2, :, :] = torch.sin(pos_h * div_term).transpose(0, 1).unsqueeze(2).repeat(1, 1, width)
     pe[d_model + 1::2, :, :] = torch.cos(pos_h * div_term).transpose(0, 1).unsqueeze(2).repeat(1, 1, width)
 
-    return pe.permute(1,2,0)
+    return pe.permute(2,1,0)
 
 def _cfg(url='', **kwargs):
     return {
@@ -294,8 +294,8 @@ class VIT_MLA(nn.Module):
         self.num_patches = self.patch_embed.num_patches
 
         self.cls_token = nn.Parameter(torch.zeros(1, 1, self.embed_dim))
-        # self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches + 1, self.embed_dim))
-        self.pos_embed = positionalencoding2d(1,self.num_patches + 1, self.embed_dim)
+        self.pos_embed = nn.Parameter(torch.zeros(1, self.num_patches + 1, self.embed_dim))
+        # self.pos_embed = positionalencoding2d(self.embed_dim, 2304, 1)
         self.pos_drop = nn.Dropout(p=self.drop_rate)
 
         dpr = [x.item() for x in torch.linspace(0, self.drop_path_rate, self.depth)]  # stochastic depth decay rule
@@ -362,7 +362,10 @@ class VIT_MLA(nn.Module):
 
         cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
         x = torch.cat((cls_tokens, x), dim=1)
-        x = x + self.pos_embed
+        # 修改二维Pos_embedding
+        # pos_embed = self.pos_embed.reshape(1,self.num_patches,768)
+        # pos_embed = torch.cat((self.pos_embed, torch.zeros(1, 1, self.embed_dim)), dim=1)
+        x = x + pos_embed.to(device = 'cuda')
         x = x[:,1:]
         x = self.pos_drop(x)
               
