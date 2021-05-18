@@ -13,9 +13,11 @@ from .vit_mla import VIT_MLA
 from .vit_mla_fuseconv import VIT_MLA_ConvFuse
 from .vit_mla_fuseconv_twolayer import VIT_MLA_ConvFuse_TwoLayer
 from .vit_mla_fuseconv_resnet18 import VIT_MLA_ConvFuse_ResNet18
+from .vit_mla_fuseconv_resnet50 import VIT_MLA_ConvFuse_ResNet50
 from .swin_transformer import SwinTransformer
 __all__ = [
     'ResNet', 'ResNetV1c', 'ResNetV1d', 'ResNeXt', 'HRNet', 'FastSCNN',
     'ResNeSt', 'MobileNetV2', 'UNet', 'CGNet', 'MobileNetV3', 'VisionTransformer', 'VIT_MLA',
-    'VIT_MLA_ConvFuse', 'SwinTransformer', 'VIT_MLA_ConvFuse_TwoLayer','VIT_MLA_ConvFuse_ResNet18'
+    'VIT_MLA_ConvFuse', 'SwinTransformer', 'VIT_MLA_ConvFuse_TwoLayer','VIT_MLA_ConvFuse_ResNet18',
+    'VIT_MLA_ConvFuse_ResNet50',
 ]
