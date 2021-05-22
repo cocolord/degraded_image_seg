@@ -3,7 +3,7 @@ norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     type='EncoderDecoder',
     backbone=dict(
-        type='VIT_MLA_ConvFuse_ResNet50',
+        type='VIT_MLA_ConvFuse_ResNet18',
         model_name='deit_base_distilled_path16_384',
         img_size=768,
         patch_size=16, 
