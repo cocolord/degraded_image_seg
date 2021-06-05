@@ -281,7 +281,7 @@ class VIT_MLA(nn.Module):
         self.align_corners = align_corners
         self.mla_channels = mla_channels
         self.mla_index = mla_index
-
+        # self.token_reorder = nn.Conv2d(self.embed_dim,self.embed_dim,3,1,1)
         self.num_stages = self.depth
         self.out_indices= tuple(range(self.num_stages))
 
@@ -365,8 +365,14 @@ class VIT_MLA(nn.Module):
         # 修改二维Pos_embedding
         # pos_embed = self.pos_embed.reshape(1,self.num_patches,768)
         # pos_embed = torch.cat((self.pos_embed, torch.zeros(1, 1, self.embed_dim)), dim=1)
-        x = x + pos_embed.to(device = 'cuda')
+        x = x + self.pos_embed
         x = x[:,1:]
+        # print(x.shape)  #torch.Size([1, 2304, 768])
+        # x = x.view(B,int(self.num_patches**0.5),int(self.num_patches**0.5),self.embed_dim).permute(0,3,2,1)
+        # print(x.shape) # torch.Size([1, 48, 48, 768])
+        # x = self.token_reorder(x)
+        # print(x.shape)
+        # x = x.permute(0,3,2,1).reshape(B,self.num_patches,self.embed_dim)
         x = self.pos_drop(x)
               
         outs = []

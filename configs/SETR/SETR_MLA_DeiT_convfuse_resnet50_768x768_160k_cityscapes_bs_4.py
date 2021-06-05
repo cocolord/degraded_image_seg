@@ -1,7 +1,7 @@
 _base_ = [
-    '../_base_/models/setr_mla.py',
+    '../_base_/models/setr_mla_convfuse_resnet50.py',
     '../_base_/datasets/cityscapes_768x768.py', '../_base_/default_runtime.py',
-    '../_base_/schedules/schedule_80k.py'
+    '../_base_/schedules/schedule_160k.py'
 ]
 
 model = dict(
@@ -52,7 +52,7 @@ model = dict(
         ])
 
 optimizer = dict(lr=0.002, weight_decay=0.0,
-paramwise_cfg = dict(custom_keys={'head': dict(lr_mult=10.)})
+paramwise_cfg = dict(custom_keys={'head': dict(lr_mult=1.)})
 )
 
 crop_size = (768, 768)

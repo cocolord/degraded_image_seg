@@ -92,13 +92,13 @@ class Attention(nn.Module):
 
     def forward(self, x):
         B, N, C = x.shape
-        q, k, v = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = self.qkv(x).reshape(B, N, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4).contiguous()
 
-        attn = (q @ k.transpose(-2, -1)) * self.scale
+        attn = (q @ k.transpose(-2, -1).contiguous()) * self.scale
         attn = attn.softmax(dim=-1)
         attn = self.attn_drop(attn)
 
-        x = (attn @ v).transpose(1, 2).reshape(B, N, C)
+        x = (attn @ v).transpose(1, 2).contiguous().reshape(B, N, C)
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
@@ -179,7 +179,7 @@ class HybridEmbed(nn.Module):
 
     def forward(self, x):
         x = self.backbone(x)[-1]
-        x = x.flatten(2).transpose(1, 2)
+        x = x.flatten(2).transpose(1, 2).contiguous()
         x = self.proj(x)
         return x
 
@@ -199,7 +199,7 @@ class Conv_MLA(nn.Module):
     def to_2D(self, x):
         n, hw, c = x.shape
         h=w = int(math.sqrt(hw))
-        x = x.transpose(1,2).reshape(n, c, h, w)
+        x = x.transpose(1,2).contiguous().reshape(n, c, h, w)
         return x
 
     def forward(self, res2, res3, res4, res5):
@@ -336,7 +336,7 @@ class VIT_MLA_ConvFuse(nn.Module):
         y = self.conv_fuse(x)
         B = x.shape[0]
         x = self.patch_embed(x)
-        x = x.flatten(2).transpose(1, 2)
+        x = x.flatten(2).transpose(1, 2).contiguous()
 
         cls_tokens = self.cls_token.expand(B, -1, -1)  # stole cls_tokens impl from Phil Wang, thanks
         x = torch.cat((cls_tokens, x), dim=1)

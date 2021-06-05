@@ -16,7 +16,7 @@ from .vit_mla_head import MLAHead
 class Layer_Att(nn.Module):
     def __init__(self):
         super(Layer_Att, self).__init__()
-        self.gamma = nn.Parameter(torch.zeros(1,requires_grad=True))
+        self.gamma = nn.Parameter(torch.randn(1,requires_grad=True))
         self.softmax = nn.Softmax(dim=-1)
 
     def forward(self, x):
@@ -27,19 +27,19 @@ class Layer_Att(nn.Module):
                 out : attention map + input feature (B, NC, H, W)
         """
         m_batchsize, N, C, height, width = x.size()
-        proj_query = x.view(m_batchsize, N, -1)
-        proj_key = x.view(m_batchsize, N, -1).permute(0, 2, 1)
+        proj_query = x.contiguous().view(m_batchsize, N, -1)
+        proj_key = x.contiguous().view(m_batchsize, N, -1).permute(0, 2, 1)
         energy = torch.bmm(proj_query, proj_key)#b x n x n
         energy_new = torch.max(
             energy, -1, keepdim=True)[0].expand_as(energy)-energy
         attention = self.softmax(energy_new)
-        proj_value = x.view(m_batchsize, N, -1)
+        proj_value = x.contiguous().view(m_batchsize, N, -1)
 
         out = torch.bmm(attention, proj_value)
-        out = out.view(m_batchsize, N, C, height, width)
+        out = out.contiguous().view(m_batchsize, N, C, height, width)
 
-        out = 0.01*out + x
-        out = out.view(m_batchsize, -1, height, width)
+        out = self.gamma*out + x
+        out = out.contiguous().view(m_batchsize, -1, height, width)
         return out
 
 
@@ -56,8 +56,8 @@ class VIT_MLALAConvFuseHead(BaseDecodeHead):
         self.BatchNorm = norm_layer
         self.mlahead_channels = mlahead_channels
         self.mlahead = MLAHead(mla_channels=self.mla_channels, mlahead_channels=self.mlahead_channels, norm_cfg=self.norm_cfg)
-        self.fuse1 = nn.Conv2d(4 * self.mlahead_channels, self.mlahead_channels, 1, 1, 0)
-        self.fuse2 = nn.Conv2d(2 * self.mlahead_channels, self.mlahead_channels, 1, 1, 0)
+        self.fuse1 = nn.Conv2d(4 * self.mlahead_channels, self.mlahead_channels, 3, 1, 1)
+        self.fuse2 = nn.Conv2d(2 * self.mlahead_channels, self.mlahead_channels, 3, 1, 1)
         self.cls = nn.Conv2d(self.mlahead_channels, self.num_classes, 3, padding=1)
         self.la = Layer_Att()
         self.la_conv = Layer_Att()
