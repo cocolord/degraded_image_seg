@@ -14,11 +14,12 @@ from .cityscapes_sccqq import CityscapesSccqqDataset
 from .cityscapes_blurred import CityscapesBlurredDataset
 from .cityscapes_foggy import CityscapesFoggyDataset
 from .cityscapes_rain import CityscapesRainDataset
+from .cityscapes_extra import CityscapesExtraDataset
 __all__ = [
     'CustomDataset', 'build_dataloader', 'ConcatDataset', 'RepeatDataset',
     'DATASETS', 'build_dataset', 'PIPELINES', 'CityscapesDataset',
     'PascalVOCDataset', 'ADE20KDataset', 'PascalContextDataset',
     'ChaseDB1Dataset', 'DRIVEDataset', 'HRFDataset', 'STAREDataset',
     'CityscapesDarkDataset','CityscapesBlurredDataset','CityscapesFoggyDataset',
-    'CityscapesRainDataset'
+    'CityscapesRainDataset','CityscapesExtraDataset'
 ]

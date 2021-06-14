@@ -61,7 +61,7 @@ class VIT_MLAConvFuseHead(BaseDecodeHead):
         self.cls = nn.Conv2d(self.mlahead_channels, self.num_classes, 3, padding=1)
         # self.la = Layer_Att()
         # self.la_conv = Layer_Att()
-
+        self.test_low_level_logit = True
     def forward(self, inputs):
         x = self.mlahead(inputs[0], inputs[1], inputs[2], inputs[3])
         # print('----mlahead---x.size()',x.size())
@@ -78,6 +78,9 @@ class VIT_MLAConvFuseHead(BaseDecodeHead):
         # print('---x after la---',x.size())
         x = self.fuse2(x)
         # print('---x after fuse2---',x.size())
+        if self.test_low_level_logit:
+            x = self.cls(inputs[4])
+            return F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)
         x = self.cls(x)
         x = F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)        
         return x
