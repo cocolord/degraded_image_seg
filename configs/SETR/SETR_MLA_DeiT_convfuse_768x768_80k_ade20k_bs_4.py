@@ -1,13 +1,13 @@
 _base_ = [
     '../_base_/models/setr_mla_convfuse.py',
-    '../_base_/datasets/cityscapes_768x768.py', '../_base_/default_runtime.py',
+    '../_base_/datasets/ade20k_768x768.py', '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_80k.py'
 ]
 
 model = dict(
     backbone=dict(img_size=768,pos_embed_interp=True, drop_rate=0.,mla_channels=256,
                   model_name='deit_base_distilled_path16_384', mla_index=(2,5,8,11), embed_dim=768, depth=12, num_heads=12),
-    decode_head=dict(img_size=768,mla_channels=256,mlahead_channels=128,num_classes=19),
+    decode_head=dict(img_size=768,mla_channels=256,mlahead_channels=128,num_classes=150),
     auxiliary_head=[
         dict(
         type='VIT_MLA_AUXIHead',
@@ -15,7 +15,7 @@ model = dict(
         channels=512,
         in_index=0,
         img_size=768,
-        num_classes=19,
+        num_classes=150,
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
@@ -25,7 +25,7 @@ model = dict(
         channels=512,
         in_index=1,
         img_size=768,
-        num_classes=19,
+        num_classes=150,
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
@@ -35,7 +35,7 @@ model = dict(
         channels=512,
         in_index=2,
         img_size=768,
-        num_classes=19,
+        num_classes=150,
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
@@ -45,20 +45,17 @@ model = dict(
         channels=512,
         in_index=3,
         img_size=768,
-        num_classes=19,
+        num_classes=150,
         align_corners=False,
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
         ])
 
-optimizer = dict(lr=0.001, weight_decay=0.0,
+optimizer = dict(lr=0.002, weight_decay=0.0,
 paramwise_cfg = dict(custom_keys={'head': dict(lr_mult=1.)})
 )
-
-# learning policy
-lr_config = dict(policy='poly', power=0.9, min_lr=5e-5, by_epoch=False)
 
 crop_size = (768, 768)
 test_cfg = dict(mode='slide', crop_size=crop_size, stride=(512, 512))
 find_unused_parameters = True
-data = dict(samples_per_gpu=2)
+data = dict(samples_per_gpu=1)
