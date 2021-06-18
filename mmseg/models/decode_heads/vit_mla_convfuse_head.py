@@ -61,7 +61,7 @@ class VIT_MLAConvFuseHead(BaseDecodeHead):
         self.cls = nn.Conv2d(self.mlahead_channels, self.num_classes, 3, padding=1)
         # self.la = Layer_Att()
         # self.la_conv = Layer_Att()
-        self.test_low_level_logit = True
+        self.test_low_level_logit = False
     def forward(self, inputs):
         x = self.mlahead(inputs[0], inputs[1], inputs[2], inputs[3])
         # print('----mlahead---x.size()',x.size())

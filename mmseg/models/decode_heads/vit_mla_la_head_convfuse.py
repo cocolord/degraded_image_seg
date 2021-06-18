@@ -59,7 +59,6 @@ class VIT_MLALAConvFuseHead(BaseDecodeHead):
         self.fuse1 = nn.Conv2d(4 * self.mlahead_channels, self.mlahead_channels, 3, 1, 1)
         self.fuse2 = nn.Conv2d(2 * self.mlahead_channels, self.mlahead_channels, 3, 1, 1)
         self.cls = nn.Conv2d(self.mlahead_channels, self.num_classes, 3, padding=1)
-        self.la = Layer_Att()
         self.la_conv = Layer_Att()
 
     def forward(self, inputs):
@@ -68,7 +67,6 @@ class VIT_MLALAConvFuseHead(BaseDecodeHead):
         # print('---input[4] ---',inputs[4].size())
         b,c,h,w = x.size()
         # print('---x before la---',x.size())
-        x = self.la(x.view(b,4,-1,h,w))
         # print('---x before fuse1---',x.size())
         x = self.fuse1(x)
         # print('---x before cat---',x.size())
