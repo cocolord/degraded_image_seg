@@ -15,20 +15,20 @@ from mmcv.cnn import build_norm_layer
 
 
 @HEADS.register_module()
-class VisionTransformerUpHead(BaseDecodeHead):
+class VisionTransformerUpHeadConvFuse(BaseDecodeHead):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
     def __init__(self, img_size=768, embed_dim=1024, 
                 norm_layer=partial(nn.LayerNorm, eps=1e-6), norm_cfg=None, 
                 num_conv=1, upsampling_method='bilinear', num_upsampe_layer=1, **kwargs):
-        super(VisionTransformerUpHead, self).__init__(**kwargs)
+        super(VisionTransformerUpHeadConvFuse, self).__init__(**kwargs)
         self.img_size = img_size
         self.norm_cfg = norm_cfg
         self.num_conv = num_conv
         self.norm = norm_layer(embed_dim)
         self.upsampling_method = upsampling_method
         self.num_upsampe_layer = num_upsampe_layer
-
+        self.conv_fuse = nn.Conv2d(384,256,3,1,1)
         out_channel=self.num_classes
 
         if self.num_conv==2:
@@ -61,9 +61,8 @@ class VisionTransformerUpHead(BaseDecodeHead):
                 nn.init.constant_(m.weight, 1.0)
 
     def forward(self, x):
-        if len(x) == 2:
-            x = x[0]
-        x = self._transform_inputs(x)
+        y = x[1]
+        x = self._transform_inputs(x[0])
         if x.dim()==3:
             if x.shape[1] % 48 !=0:
                 x = x[:,1:]
@@ -78,6 +77,8 @@ class VisionTransformerUpHead(BaseDecodeHead):
             if self.num_conv==2:
                 if self.num_upsampe_layer==2:
                     x = self.conv_0(x)
+                    x = torch.cat([x,y],dim=1)
+                    x = self.conv_fuse(x)
                     x = self.syncbn_fc_0(x)
                     x = F.relu(x,inplace=True)
                     x = F.interpolate(x, size=x.shape[-1]*4, mode='bilinear', align_corners=self.align_corners)
@@ -100,6 +101,8 @@ class VisionTransformerUpHead(BaseDecodeHead):
                     x = F.relu(x,inplace=True)
                     x = F.interpolate(x, size=x.shape[-1]*2, mode='bilinear', align_corners=self.align_corners)
                     x = self.conv_2(x)
+                    x = torch.cat([x,y],dim=1)
+                    x = self.conv_fuse(x)
                     x = self.syncbn_fc_2(x)
                     x = F.relu(x,inplace=True)
                     x = F.interpolate(x, size=x.shape[-1]*2, mode='bilinear', align_corners=self.align_corners)
