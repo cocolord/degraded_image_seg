@@ -10,6 +10,7 @@ from .layers import DropPath, to_2tuple, trunc_normal_
 from ..builder import BACKBONES
 
 from mmcv.cnn import build_norm_layer
+from .resnet import ResNet
 
 
 def _cfg(url='', **kwargs):
@@ -186,14 +187,14 @@ class HybridEmbed(nn.Module):
 
 
 @BACKBONES.register_module()
-class VIT_ConvFuse_UnetLike(nn.Module):
+class VIT_ConvFuse(nn.Module):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
     def __init__(self, model_name='vit_large_patch16_384', img_size=384, patch_size=16, in_chans=3, embed_dim=1024, depth=24,
                  num_heads=16, num_classes=19, mlp_ratio=4., qkv_bias=True, qk_scale=None, drop_rate=0.1, attn_drop_rate=0.,
                  drop_path_rate=0., hybrid_backbone=None, norm_layer=partial(nn.LayerNorm, eps=1e-6), norm_cfg=None, 
-                 pos_embed_interp=False, random_init=False, align_corners=False, **kwargs):
-        super(VIT_ConvFuse_UnetLike, self).__init__(**kwargs)
+                 pos_embed_interp=False, random_init=False, align_corners=False, conv_type='unet', **kwargs):
+        super(VIT_ConvFuse, self).__init__(**kwargs)
         self.model_name = model_name
         self.img_size = img_size
         self.patch_size = patch_size
@@ -214,7 +215,7 @@ class VIT_ConvFuse_UnetLike(nn.Module):
         self.pos_embed_interp = pos_embed_interp
         self.random_init = random_init
         self.align_corners = align_corners
-
+        self.conv_type = conv_type
         self.num_stages = self.depth
         self.out_indices= tuple(range(self.num_stages))
 
@@ -245,6 +246,14 @@ class VIT_ConvFuse_UnetLike(nn.Module):
         trunc_normal_(self.cls_token, std=.02)
         # self.apply(self._init_weights)
         self.conv_fuse = Conv_Fuse_Unetlike()
+        if self.conv_type == 'unet':
+            pass
+        elif self.conv_type == 'single':
+            self.conv_fuse = Conv_Fuse()
+        elif self.conv_type == 'resnet50':
+            self.conv_fuse = Conv_Fuse_ResNet50()
+        elif self.conv_type == 'resnet18':
+            self.conv_fuse = Conv_Fuse_ResNet18()
 
     def init_weights(self, pretrained=None):
         # nn.init.normal_(self.pos_embed, std=0.02)
@@ -397,3 +406,64 @@ class Conv_Fuse_Unetlike(nn.Module):
         agg_fm = torch.cat((l2_fm,agg_fm),dim=1)
         agg_fm = self.layer2_enc(agg_fm)
         return agg_fm # 2,128,192,192
+
+class Conv_Fuse(nn.Module):
+    def __init__(self):
+        super(Conv_Fuse, self).__init__()
+        self.conv1 =  nn.Conv2d(3,64,3,2,1)
+        self.relu1 = nn.ReLU()
+        self.conv2 = nn.Conv2d(64,128,3,2,1)
+        self.relu2 = nn.ReLU()
+        self.bn1 = nn.BatchNorm2d(64)
+        self.bn2 = nn.BatchNorm2d(128)
+
+    def forward(self, x):
+        b,c,h,w = x.size()
+        x = self.conv1(x)
+        x = self.bn1(x)
+        x = self.relu1(x)
+        x = self.conv2(x)
+        x = self.bn2(x)
+        x = self.relu2(x)
+        return x
+
+class Conv_Fuse_ResNet50(nn.Module):
+    def __init__(self):
+        super(Conv_Fuse_ResNet50, self).__init__()
+        self.resnet = ResNet(depth=50)
+        self.resnet.init_weights(pretrained='torchvision://resnet50')
+        self.conv_fuse = nn.Conv2d(3840,128,1,1,0)
+        self.relu4 = nn.ReLU()
+        self.bn4 = nn.BatchNorm2d(128)
+
+
+    def forward(self, x):
+        b,c,h,w = x.size()
+        x = self.resnet(x)
+        c1 = F.interpolate(x[1],(h//4,w//4),mode='bilinear')
+        c2 = F.interpolate(x[2],(h//4,w//4),mode='bilinear')
+        c3 = F.interpolate(x[3], (h//4,w//4), mode= 'bilinear')
+        x = torch.cat((x[0],c1,c2,c3), dim=1)
+        x = self.conv_fuse(x)
+        # 1/4 H, 1/4 W, 128
+        return x
+class Conv_Fuse_ResNet18(nn.Module):
+    def __init__(self):
+        super(Conv_Fuse_ResNet18, self).__init__()
+        self.resnet = ResNet(depth=18)
+        self.resnet.init_weights(pretrained='torchvision://resnet18')
+        self.conv_fuse = nn.Conv2d(960,128,1,1,0)
+        self.relu4 = nn.ReLU()
+        self.bn4 = nn.BatchNorm2d(128)
+
+
+    def forward(self, x):
+        b,c,h,w = x.size()
+        x = self.resnet(x)
+        c1 = F.interpolate(x[1],(h//4,w//4),mode='bilinear')
+        c2 = F.interpolate(x[2],(h//4,w//4),mode='bilinear')
+        c3 = F.interpolate(x[3], (h//4,w//4), mode= 'bilinear')
+        x = torch.cat((x[0],c1,c2,c3), dim=1)
+        x = self.conv_fuse(x)
+        # 1/4 H, 1/4 W, 128
+        return x
