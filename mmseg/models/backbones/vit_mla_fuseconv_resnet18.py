@@ -45,7 +45,7 @@ default_cfgs = {
     'vit_large_patch16_384': _cfg(
         url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_large_p16_384-b3be5167.pth',
         input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0,
-        ),
+        pretrained_finetune='pretrain/jx_vit_large_p16_384-b3be5167.pth'),
     'vit_large_patch32_384': _cfg(
         url='https://github.com/rwightman/pytorch-image-models/releases/download/v0.1-vitjx/jx_vit_large_p32_384-9b920ba8.pth',
         input_size=(3, 384, 384), mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5), crop_pct=1.0),
