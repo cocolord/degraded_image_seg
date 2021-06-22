@@ -3,7 +3,7 @@ norm_cfg = dict(type='SyncBN', requires_grad=True)
 model = dict(
     type='EncoderDecoder',
     backbone=dict(
-        type='VIT_ConvFuse_UnetLike',
+        type='VIT_ConvFuse',
         model_name='deit_base_distilled_path16_384',
         img_size=768,
         patch_size=16, 
@@ -16,6 +16,7 @@ model = dict(
         norm_cfg=norm_cfg,
         pos_embed_interp=True,
         align_corners=False,
+        conv_type='unet'
         ),
     decode_head=dict(
         type='VisionTransformerUpHeadConvFuse',
