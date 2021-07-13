@@ -9,6 +9,7 @@ from .hrf import HRFDataset
 from .pascal_context import PascalContextDataset
 from .stare import STAREDataset
 from .voc import PascalVOCDataset
+from .aeroscapes import AeroscapesDataset
 from .cityscapes_dark import CityscapesDarkDataset
 from .cityscapes_sccqq import CityscapesSccqqDataset
 from .cityscapes_blurred import CityscapesBlurredDataset
@@ -21,5 +22,5 @@ __all__ = [
     'PascalVOCDataset', 'ADE20KDataset', 'PascalContextDataset',
     'ChaseDB1Dataset', 'DRIVEDataset', 'HRFDataset', 'STAREDataset',
     'CityscapesDarkDataset','CityscapesBlurredDataset','CityscapesFoggyDataset',
-    'CityscapesRainDataset','CityscapesExtraDataset'
+    'CityscapesRainDataset','CityscapesExtraDataset', 'AeroscapesDataset'
 ]
