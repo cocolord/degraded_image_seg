@@ -887,3 +887,37 @@ class PhotoMetricDistortion(object):
                      f'{self.saturation_upper}), '
                      f'hue_delta={self.hue_delta})')
         return repr_str
+
+@PIPELINES.register_module()
+class MotionBlur(object):
+    """APPLY MOTION BLUR TO image
+    Args:
+        kernel_size: kernel size of motion blur filter
+    """
+
+    def __init__(self,
+                 kernel_size = 5):
+        self.kernel_size = kernel_size
+    def apply_motion_blur(self, image, size=5, angle=0):
+        """ draw a rotated line as kernel, then apply a convolution filter to an image with that kernel.
+        Args:
+            size: kernel size of motion blur filter
+        """
+        import cv2
+        k = np.zeros((size, size), dtype=np.float32)
+        k[ (size-1)// 2 , :] = np.ones(size, dtype=np.float32)
+        k = cv2.warpAffine(k, cv2.getRotationMatrix2D( (size / 2 -0.5 , size / 2 -0.5 ) , angle, 1.0), (size, size) )  
+        k = k * ( 1.0 / np.sum(k) )        
+        return cv2.filter2D(image, -1, k)
+
+    def __call__(self, results):
+        import random
+        img = results['img']
+        rand_kernel_size = random.randint(3,20)
+        rand_angel = random.uniform(-180.0,180.0)
+        img = self.apply_motion_blur(img, rand_kernel_size, rand_angel)
+        results['img'] = img
+        return results
+
+    def __repr__(self):
+        return self.__class__.__name__
