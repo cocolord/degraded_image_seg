@@ -250,15 +250,15 @@ class Conv_MLA(nn.Module):
 
 
 @BACKBONES.register_module()
-class VIT_MLA(nn.Module):
+class VIT_MLA_LAST(nn.Module):
     """ Vision Transformer with support for patch or hybrid CNN input stage
     """
-    def __init__(self, model_name='vit_large_patch16_384', img_size=768, patch_size=16, in_chans=3, embed_dim=1024, depth=24,
+    def __init__(self, model_name='vit_large_patch16_384', img_size=384, patch_size=16, in_chans=3, embed_dim=1024, depth=24,
                  num_heads=16, num_classes=19, mlp_ratio=4., qkv_bias=True, qk_scale=None, drop_rate=0.1, attn_drop_rate=0.,
                  drop_path_rate=0., hybrid_backbone=None, norm_layer=partial(nn.LayerNorm, eps=1e-6), norm_cfg=None, 
                  pos_embed_interp=False, random_init=False, align_corners=False, mla_channels=256, 
                  mla_index=(5,11,17,23), **kwargs):
-        super(VIT_MLA, self).__init__(**kwargs)
+        super(VIT_MLA_LAST, self).__init__(**kwargs)
         self.model_name = model_name
         self.img_size = img_size
         self.patch_size = patch_size
@@ -388,4 +388,4 @@ class VIT_MLA(nn.Module):
         
         p6, p12, p18, p24 = self.mla(c6, c12, c18, c24)
         
-        return (p6, p12, p18, p24)
+        return p24
