@@ -1,7 +1,7 @@
 _base_ = [
     '../_base_/models/setr_mlala_convfuse.py',
-    '../_base_/datasets/cityscapes_768x768_foggy.py', '../_base_/default_runtime.py',
-    '../_base_/schedules/schedule_80k.py'
+    '../_base_/datasets/cityscapes_768x768_blurred.py', '../_base_/default_runtime.py',
+    '../_base_/schedules/schedule_160k.py'
 ]
 
 model = dict(
@@ -33,7 +33,7 @@ model = dict(
         loss_decode=dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4,
             # DeepLabV3 权重
-            class_weight=[0.8373, 0.9180, 0.8660, 1.0345, 1.0166, 0.9969, 0.9754,
+            class_weight=[0.8373, 0.9180, 0.8660, 1.0345, 1.0166, 1.0969, 1.0754,
                         1.0489, 0.8786, 1.0023, 0.9539, 0.9843, 1.1116, 0.9037,
                         1.0865, 1.0955, 1.0865, 1.1529, 1.0507]
             )),
@@ -59,11 +59,11 @@ model = dict(
             type='CrossEntropyLoss', use_sigmoid=False, loss_weight=0.4)),
         ])
 
-optimizer = dict(lr=0.001, weight_decay=0.0,
-paramwise_cfg = dict(custom_keys={'head': dict(lr_mult=2.)})
+optimizer = dict(lr=0.0015, weight_decay=0.0,
+paramwise_cfg = dict(custom_keys={'head': dict(lr_mult=1.)})
 )
 
 crop_size = (768, 768)
 test_cfg = dict(mode='slide', crop_size=crop_size, stride=(512, 512))
 find_unused_parameters = True
-data = dict(samples_per_gpu=2)
+data = dict(samples_per_gpu=1)

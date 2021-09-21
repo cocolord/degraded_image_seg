@@ -10,6 +10,7 @@ from .unet import UNet
 
 from .vit import VisionTransformer
 from .vit_mla import VIT_MLA
+from .vit_mla_last import VIT_MLA_LAST
 from .vit_mla_fuseconv import VIT_MLA_ConvFuse
 from .vit_mla_fuseconv_twolayer import VIT_MLA_ConvFuse_TwoLayer
 from .vit_mla_fuseconv_resnet18 import VIT_MLA_ConvFuse_ResNet18
