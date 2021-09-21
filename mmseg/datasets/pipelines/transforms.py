@@ -901,6 +901,7 @@ class MotionBlur(object):
     def apply_motion_blur(self, image, size=5, angle=0):
         """ draw a rotated line as kernel, then apply a convolution filter to an image with that kernel.
         Args:
+            image: numpy arrays
             size: kernel size of motion blur filter
         """
         import cv2
