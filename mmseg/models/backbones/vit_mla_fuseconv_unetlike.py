@@ -231,7 +231,6 @@ class Conv_MLA(nn.Module):
 
         return mla_p2, mla_p3, mla_p4, mla_p5
 
-
 @BACKBONES.register_module()
 class VIT_MLA_ConvFuse_UnetLike(nn.Module):
     """ Vision Transformer with support for patch or hybrid CNN input stage

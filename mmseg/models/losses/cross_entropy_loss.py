@@ -12,20 +12,23 @@ def cross_entropy(pred,
                   class_weight=None,
                   reduction='mean',
                   avg_factor=None,
-                  ignore_index=-100):
+                  ignore_index=255):
     """The wrapper function for :func:`F.cross_entropy`"""
     # class_weight is a manual rescaling weight given to each class.
     # If given, has to be a Tensor of size C element-wise losses
+    # print("pred", pred)
+    # print("label", label)
     loss = F.cross_entropy(
         pred,
         label,
         weight=class_weight,
         reduction='none',
         ignore_index=ignore_index)
-
+    # print("loss.shape", loss.shape)
     # apply weights and do the reduction
     if weight is not None:
         weight = weight.float()
+    # print("weight.shape", weight.shape)
     loss = weight_reduce_loss(
         loss, weight=weight, reduction=reduction, avg_factor=avg_factor)
 

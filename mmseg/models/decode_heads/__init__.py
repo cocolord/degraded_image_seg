@@ -28,11 +28,13 @@ from .vit_mla_la_head_convfuse_twolayer import VIT_MLALAConvFuseTwoLayerHead
 from .vit_mla_convfuse_head import VIT_MLAConvFuseHead
 from .vit_up_head_convfuse import VisionTransformerUpHeadConvFuse
 from .vit_up_head_convfuse_la import VisionTransformerUpHeadConvFuseLA
+from .vit_mla_la_head_convfuse_contrast import VIT_MLALAConvFuseContrastHead
+
 __all__ = [
     'FCNHead', 'PSPHead', 'ASPPHead', 'PSAHead', 'NLHead', 'GCHead', 'CCHead',
     'UPerHead', 'DepthwiseSeparableASPPHead', 'ANNHead', 'DAHead', 'OCRHead',
     'EncHead', 'DepthwiseSeparableFCNHead', 'FPNHead', 'EMAHead', 'DNLHead',
     'PointHead', 'APCHead', 'DMHead', 'LRASPPHead','VisionTransformerUpHead', 
     'VIT_MLAHead', 'VIT_MLA_AUXIHead', 'VIT_MLALAHead', 'VIT_MLALAConvFuseHead', 'VIT_MLALAConvFuseTwoLayerHead',
-    'VIT_MLAConvFuseHead', 'VisionTransformerUpHeadConvFuse', 'VisionTransformerUpHeadConvFuseLA'
+    'VIT_MLAConvFuseHead', 'VisionTransformerUpHeadConvFuse', 'VisionTransformerUpHeadConvFuseLA','VIT_MLALAConvFuseContrastHead'
 ]

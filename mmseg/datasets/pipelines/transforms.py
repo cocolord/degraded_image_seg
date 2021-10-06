@@ -913,6 +913,8 @@ class MotionBlur(object):
 
     def __call__(self, results):
         import random
+        if random.random() < 0.5:
+            return results
         img = results['img']
         rand_kernel_size = random.randint(3,20)
         rand_angel = random.uniform(-180.0,180.0)

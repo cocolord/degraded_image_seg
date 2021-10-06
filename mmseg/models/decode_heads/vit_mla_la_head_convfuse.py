@@ -3,7 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from functools import partial
 import math
-
+import numpy as np
 from .helpers import load_pretrained
 from .layers import DropPath, to_2tuple, trunc_normal_
 
@@ -75,7 +75,11 @@ class VIT_MLALAConvFuseHead(BaseDecodeHead):
         x = self.la_conv(x.view(b,2,-1,h,w))
         # print('---x after la---',x.size())
         x = self.fuse2(x)
+        # y = x.cpu().detach().view(-1,x.size(1)).numpy()
+        # np.save("/home/juan/Donglusen/Workspace/mmsegmentation/tests/tsne_embedding.npy", y)
         # print('---x after fuse2---',x.size())
         x = self.cls(x)
+        # y = x.cpu().detach().view(-1,x.size(1)).numpy()
+        # np.save("/home/juan/Donglusen/Workspace/mmsegmentation/tests/test_label.npy", y)
         x = F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)        
         return x

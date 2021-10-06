@@ -38,7 +38,7 @@ class Layer_Att(nn.Module):
         out = torch.bmm(attention, proj_value)
         out = out.contiguous().view(m_batchsize, N, C, height, width)
 
-        out = self.gamma*out + x
+        out = 0.01*out + x
         out = out.contiguous().view(m_batchsize, -1, height, width)
         return out
 
@@ -78,9 +78,9 @@ class VIT_MLAConvFuseHead(BaseDecodeHead):
         # print('---x after la---',x.size())
         x = self.fuse2(x)
         # print('---x after fuse2---',x.size())
-        if self.test_low_level_logit:
-            x = self.cls(inputs[4])
-            return F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)
+        # if self.test_low_level_logit is True:
+        #     x = self.cls(inputs[4])
+        #     return F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)
         x = self.cls(x)
         x = F.interpolate(x, size=self.img_size, mode='bilinear', align_corners=self.align_corners)        
         return x
